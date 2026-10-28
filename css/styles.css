@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #090d16;
+  color: #f1f5f9;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Channel Packet Glows */
+.packet-node {
+  will-change: left, top, transform;
+  user-select: none;
+  cursor: pointer;
+  transition: transform 0.15s ease-out;
+}
+.packet-node:hover {
+  transform: translate(-50%, -50%) scale(1.15) !important;
+}
+
+/* Channel Signal Wave Animation */
+@keyframes signalFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+.channel-wire {
+  background: linear-gradient(90deg, #1e293b, #3b82f6 20%, #1e293b 40%, #10b981 60%, #1e293b 80%, #3b82f6 100%);
+  background-size: 200% 200%;
+  animation: signalFlow 8s linear infinite;
+}
+
+/* Tab Active Styles */
+.tab-btn.active {
+  background-color: #4f46e5;
+  color: #ffffff;
+  border-color: #6366f1;
+}
+
+/* Subtle glow cards */
+.glow-card {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+}
+.glow-card:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+/* Custom Sliders */
+input[type="range"] {
+  accent-color: #6366f1;
+}
+
+/* Print Styles for lab report */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .glow-card {
+    border: 1px solid #ccc !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}

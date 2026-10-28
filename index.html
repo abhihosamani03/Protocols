@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flow Control Protocol Simulator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen text-slate-100 flex flex-col bg-slate-950 font-sans">
+
+  <!-- ==================== TOP NAVIGATION ==================== -->
+  <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-sky-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-bold text-white tracking-tight">Flow Control Protocol Simulator</h1>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">v1.0</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Interactive Visualization &amp; Performance Benchmark for Sliding Window Protocols</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex items-center gap-1.5 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-xs font-semibold">
+        <button id="tabSimBtn" onclick="switchTab('simulation')" class="tab-btn active px-3.5 py-1.5 rounded-lg transition-all text-white flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Simulation Lab
+        </button>
+        <button id="tabCompareBtn" onclick="switchTab('comparison')" class="tab-btn px-3.5 py-1.5 rounded-lg transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Protocol Benchmark
+        </button>
+        <button id="tabTheoryBtn" onclick="switchTab('theory')" class="tab-btn px-3.5 py-1.5 rounded-lg transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          Theory &amp; Formulas
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-5 space-y-5">
+
+    <!-- ==================== TAB 1: SIMULATION LAB ==================== -->
+    <div id="tabSimulation" class="space-y-5">
+
+      <!-- MASTER CONTROL STRIP -->
+      <section class="glow-card rounded-2xl p-4 border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+        <!-- Protocol Selector & Buttons -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="space-y-0.5">
+            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Protocol</span>
+            <select id="protocolSelect" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+              <option value="one-bit">One-Bit Sliding Window (Stop &amp; Wait)</option>
+              <option value="gbn" selected>Go-Back-N (GBN)</option>
+              <option value="sr">Selective Repeat (SR)</option>
+            </select>
+          </div>
+
+          <!-- Play / Pause Button -->
+          <div class="space-y-0.5">
+            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Action</span>
+            <div class="flex items-center gap-2">
+              <button id="btnStartPause" class="px-5 py-2 rounded-xl font-bold flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-lg shadow-indigo-600/30 active:scale-95 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Start Simulation</span>
+              </button>
+
+              <button id="btnStep" class="px-3.5 py-2 rounded-xl font-semibold flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all active:scale-95 text-sm" title="Advance by 1 step">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                <span>Step</span>
+              </button>
+
+              <button id="btnReset" class="px-3.5 py-2 rounded-xl font-semibold flex items-center gap-1.5 bg-slate-800 hover:bg-rose-950/60 hover:text-rose-300 text-slate-300 border border-slate-700 transition-all active:scale-95 text-sm" title="Reset Simulation">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>Reset</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation Speed & Settings Drawer Toggle -->
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-semibold">
+            <span class="text-slate-400">Speed:</span>
+            <input id="speedSlider" type="range" min="0.25" max="3" step="0.25" value="1.0" class="w-20 cursor-pointer h-1.5 bg-slate-800">
+            <span id="speedVal" class="font-mono text-indigo-400 w-8">1x</span>
+          </div>
+
+          <button id="toggleParamsBtn" onclick="toggleParametersPanel()" class="px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition-all">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span id="paramsToggleText">Parameters (Open)</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- COLLAPSIBLE PARAMETERS PANEL -->
+      <section id="parametersPanel" class="glow-card rounded-2xl p-4 border border-slate-800 bg-slate-900/40 transition-all">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 text-xs font-semibold">
+          
+          <!-- Window Size -->
+          <div id="windowSizeGroup" class="space-y-1">
+            <label class="text-slate-300 uppercase tracking-wider text-[10px]">Window Size (N)</label>
+            <input id="windowSizeInput" type="number" min="1" max="16" value="4" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 font-mono text-white text-xs focus:ring-1 focus:ring-indigo-500">
+            <p class="text-[10px] text-slate-500">Max frames in flight</p>
+          </div>
+
+          <!-- Total Frames -->
+          <div class="space-y-1">
+            <label class="text-slate-300 uppercase tracking-wider text-[10px]">Total Frames (M)</label>
+            <input id="totalFramesInput" type="number" min="1" max="50" value="10" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 font-mono text-white text-xs focus:ring-1 focus:ring-indigo-500">
+            <p class="text-[10px] text-slate-500">Total to transmit</p>
+          </div>
+
+          <!-- Transmission Delay -->
+          <div class="space-y-1">
+            <div class="flex justify-between">
+              <label class="text-slate-300 uppercase tracking-wider text-[10px]">Trans Delay (Tt)</label>
+              <span id="transDelayVal" class="font-mono text-indigo-400">150 ms</span>
+            </div>
+            <input id="transmissionDelayInput" type="range" min="30" max="600" step="10" value="150" class="w-full cursor-pointer h-1.5 bg-slate-800">
+            <p class="text-[10px] text-slate-500">Channel propagation</p>
+          </div>
+
+          <!-- ACK Delay -->
+          <div class="space-y-1">
+            <div class="flex justify-between">
+              <label class="text-slate-300 uppercase tracking-wider text-[10px]">ACK Delay (Tack)</label>
+              <span id="ackDelayVal" class="font-mono text-emerald-400">80 ms</span>
+            </div>
+            <input id="ackDelayInput" type="range" min="20" max="400" step="10" value="80" class="w-full cursor-pointer h-1.5 bg-slate-800">
+            <p class="text-[10px] text-slate-500">Return ACK delay</p>
+          </div>
+
+          <!-- Packet & ACK Loss -->
+          <div class="space-y-1">
+            <div class="flex justify-between">
+              <label class="text-slate-300 uppercase tracking-wider text-[10px]">Pkt / ACK Loss</label>
+              <span class="font-mono text-rose-400"><span id="packetLossVal">10%</span> / <span id="ackLossVal">5%</span></span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5">
+              <input id="packetLossInput" type="range" min="0" max="80" step="5" value="10" class="w-full cursor-pointer h-1.5 bg-slate-800" title="Packet Loss %">
+              <input id="ackLossInput" type="range" min="0" max="80" step="5" value="5" class="w-full cursor-pointer h-1.5 bg-slate-800" title="ACK Loss %">
+            </div>
+            <p class="text-[10px] text-slate-500">Pkt Loss &bull; ACK Loss</p>
+          </div>
+
+          <!-- Timeout Period -->
+          <div class="space-y-1">
+            <div class="flex justify-between">
+              <label class="text-slate-300 uppercase tracking-wider text-[10px]">Timeout Interval</label>
+              <span id="timeoutVal" class="font-mono text-amber-400">450 ms</span>
+            </div>
+            <input id="timeoutInput" type="range" min="100" max="1200" step="25" value="450" class="w-full cursor-pointer h-1.5 bg-slate-800">
+            <p class="text-[10px] text-slate-500">Sender retransmit timer</p>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==================== MAIN PHYSICAL SIMULATION STAGE ==================== -->
+      <section class="glow-card rounded-2xl p-5 border border-slate-800 bg-slate-900/60">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <h2 class="text-sm font-bold tracking-wider uppercase text-white">Interactive Transmission Channel &amp; Stations</h2>
+          </div>
+          <div class="flex items-center gap-3 text-xs font-mono">
+            <span class="text-slate-400">Active Protocol:</span>
+            <span id="currentProtocolBadge" class="font-bold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700">Go-Back-N</span>
+          </div>
+        </div>
+
+        <!-- The 3-Part Channel: Sender | Transmission Pipe | Receiver -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-stretch">
+          
+          <!-- SENDER STATION (Col 2) -->
+          <div class="md:col-span-2 flex flex-col items-center justify-center p-3 rounded-xl bg-slate-900 border border-sky-900/50 shadow-inner text-center">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-b from-sky-400 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-600/30 border-2 border-sky-300">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <span class="mt-2 text-xs font-black font-mono text-sky-400 tracking-wider">SENDER</span>
+            <span class="text-[10px] text-slate-400 font-mono mt-0.5">Host A</span>
+          </div>
+
+          <!-- THE PHYSICAL CHANNEL (Col 8) -->
+          <div class="md:col-span-8 relative rounded-xl bg-slate-950 border border-slate-800 overflow-hidden flex flex-col justify-between py-2 min-h-[190px]">
+            <!-- Top Lane: DATA FRAMES -->
+            <div class="px-4 flex items-center justify-between text-[11px] font-mono text-sky-400 font-bold border-b border-slate-900/80 pb-1">
+              <span class="flex items-center gap-1">
+                <span>Data Frames Path</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </span>
+              <span class="text-[10px] text-slate-500 font-normal">Click any flying packet to drop it!</span>
+            </div>
+
+            <!-- Animated channel tracks inside -->
+            <div id="channelAnimationBox" class="relative w-full h-32 overflow-hidden">
+              <!-- Middle Bus Wire with signal glow -->
+              <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 channel-wire opacity-30"></div>
+            </div>
+
+            <!-- Bottom Lane: ACKNOWLEDGEMENTS -->
+            <div class="px-4 flex items-center justify-between text-[11px] font-mono text-emerald-400 font-bold border-t border-slate-900/80 pt-1">
+              <span class="text-[10px] text-slate-500 font-normal">Click any flying ACK to drop it!</span>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                <span>ACK Return Path</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- RECEIVER STATION (Col 2) -->
+          <div class="md:col-span-2 flex flex-col items-center justify-center p-3 rounded-xl bg-slate-900 border border-emerald-900/50 shadow-inner text-center">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-b from-emerald-400 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-600/30 border-2 border-emerald-300">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <span class="mt-2 text-xs font-black font-mono text-emerald-400 tracking-wider">RECEIVER</span>
+            <span class="text-[10px] text-slate-400 font-mono mt-0.5">Host B</span>
+          </div>
+
+        </div>
+
+        <!-- ATTACHED SLIDING WINDOW BUFFERS (Directly beneath the respective hosts) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-3 border-t border-slate-800/80">
+          <!-- Sender Window -->
+          <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5 uppercase font-mono">
+                <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                Sender Window Buffer
+              </span>
+              <span class="text-[10px] text-slate-400 font-mono">Box = Sliding Window</span>
+            </div>
+            <div id="senderWindowBox" class="flex gap-2 overflow-x-auto pb-2 pt-1">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Receiver Window -->
+          <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5 uppercase font-mono">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                Receiver Buffer &amp; Window
+              </span>
+              <span class="text-[10px] text-slate-400 font-mono">Box = Expected Window</span>
+            </div>
+            <div id="receiverWindowBox" class="flex gap-2 overflow-x-auto pb-2 pt-1">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== BOTTOM SPLIT: CRISP LADDER DIAGRAM & LIVE METRICS HUD ==================== -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        
+        <!-- CRISP RETINA/HiDPI SPACE-TIME LADDER DIAGRAM (7 Cols) -->
+        <div class="lg:col-span-7 glow-card rounded-2xl p-4 border border-slate-800 flex flex-col">
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                Spacetime Sequence (Ladder) Diagram
+              </h3>
+              <p class="text-[11px] text-slate-400">Vector-rendered transmission timeline with sharp labels &amp; loss indicators</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="clearLadderCanvas()" class="text-[10px] font-mono px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">Clear</button>
+              <span class="text-[10px] font-mono px-2 py-1 rounded bg-indigo-950/60 text-indigo-300 border border-indigo-800">HiDPI Sharp</span>
+            </div>
+          </div>
+
+          <!-- Crisp Canvas Scroll Container -->
+          <div id="ladderScrollContainer" class="w-full h-[480px] overflow-y-auto rounded-xl bg-slate-950 border border-slate-900 relative">
+            <canvas id="ladderCanvas" class="w-full block"></canvas>
+          </div>
+
+          <!-- Ladder Diagram Legend -->
+          <div class="flex flex-wrap items-center justify-between gap-2 mt-3 pt-2 border-t border-slate-800 text-[11px] font-mono text-slate-400">
+            <div class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-sky-400"></span> Frame Tx</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-amber-400"></span> Re-Transmission</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-emerald-400"></span> ACK Return</div>
+            <div class="flex items-center gap-1.5"><span class="text-rose-400 font-bold">&#10006;</span> Packet / ACK Lost</div>
+            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500"></span> Timeout</div>
+          </div>
+        </div>
+
+        <!-- LIVE METRICS HUD & EVENT STREAM (5 Cols) -->
+        <div class="lg:col-span-5 space-y-4">
+          
+          <!-- Key Metrics Grid -->
+          <div class="glow-card rounded-2xl p-4 border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-white">Live Performance Metrics</h3>
+              <span id="statSimTime" class="text-xs font-mono font-bold text-slate-400">0 ms</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5">
+              <!-- Frames Sent -->
+              <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <span class="text-[10px] uppercase font-bold text-slate-400 block">Frames Sent</span>
+                <span id="statTotalTransmitted" class="text-lg font-black font-mono text-white mt-0.5 block">0</span>
+              </div>
+              <!-- Retransmissions -->
+              <div class="p-2.5 rounded-xl bg-amber-950/20 border border-amber-900/50">
+                <span class="text-[10px] uppercase font-bold text-amber-400 block">Retransmissions</span>
+                <span id="statRetransmissions" class="text-lg font-black font-mono text-amber-300 mt-0.5 block">0</span>
+              </div>
+              <!-- Packets Lost -->
+              <div class="p-2.5 rounded-xl bg-rose-950/20 border border-rose-900/50">
+                <span class="text-[10px] uppercase font-bold text-rose-400 block">Packets Lost</span>
+                <span id="statPacketsLost" class="text-lg font-black font-mono text-rose-300 mt-0.5 block">0</span>
+              </div>
+              <!-- ACKs Received -->
+              <div class="p-2.5 rounded-xl bg-emerald-950/20 border border-emerald-900/50">
+                <span class="text-[10px] uppercase font-bold text-emerald-400 block">ACKs Received</span>
+                <span id="statAcksReceived" class="text-lg font-black font-mono text-emerald-300 mt-0.5 block">0</span>
+              </div>
+              <!-- Throughput -->
+              <div class="p-2.5 rounded-xl bg-sky-950/20 border border-sky-900/50">
+                <span class="text-[10px] uppercase font-bold text-sky-400 block">Throughput</span>
+                <span id="statThroughput" class="text-lg font-black font-mono text-sky-300 mt-0.5 block">0.0 fps</span>
+              </div>
+              <!-- Efficiency -->
+              <div class="p-2.5 rounded-xl bg-indigo-950/20 border border-indigo-900/50">
+                <span class="text-[10px] uppercase font-bold text-indigo-400 block">Efficiency (&eta;)</span>
+                <span id="statEfficiency" class="text-lg font-black font-mono text-indigo-300 mt-0.5 block">0.0%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Event Log Stream -->
+          <div class="glow-card rounded-2xl p-4 border border-slate-800 flex flex-col">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Live Event Feed</h3>
+              <span class="text-[10px] font-mono text-slate-500">Auto-streaming</span>
+            </div>
+
+            <div class="h-[250px] overflow-y-auto rounded-xl bg-slate-950 border border-slate-900">
+              <table class="w-full text-left border-collapse">
+                <thead class="sticky top-0 bg-slate-900 border-b border-slate-800 text-[10px] font-mono text-slate-400 uppercase">
+                  <tr>
+                    <th class="py-1.5 px-2.5">Time</th>
+                    <th class="py-1.5 px-2.5">Node</th>
+                    <th class="py-1.5 px-2.5">Activity</th>
+                  </tr>
+                </thead>
+                <tbody id="eventLogBody">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ==================== TAB 2: PROTOCOL COMPARISON ==================== -->
+    <div id="tabComparison" class="hidden space-y-5">
+      <section class="glow-card rounded-2xl p-6 border border-slate-800">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+          <div>
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              Multi-Protocol Comparative Benchmark
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Runs One-Bit Sliding Window, Go-Back-N, and Selective Repeat simultaneously under identical channel conditions.</p>
+          </div>
+
+          <button id="btnRunComparison" class="px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-500 hover:to-sky-500 text-white shadow-lg shadow-indigo-600/30 transition-all active:scale-95 text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span>Run Benchmark Experiment</span>
+          </button>
+        </div>
+
+        <!-- Comparison Summary Cards -->
+        <div id="comparisonSummaryCard" class="mt-6">
+          <div class="text-center py-12 text-slate-400 font-mono text-sm border-2 border-dashed border-slate-800 rounded-xl">
+            Click <strong class="text-indigo-400">"Run Benchmark Experiment"</strong> to simulate and compare all 3 protocols side-by-side.
+          </div>
+        </div>
+
+        <!-- Comparison Chart Canvas -->
+        <div class="mt-8 glow-card rounded-xl p-5 border border-slate-800">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-4 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+            Performance Assessment Visualizer (Retransmissions vs Efficiency vs Throughput)
+          </h3>
+          <div class="h-80 w-full">
+            <canvas id="comparisonChartCanvas"></canvas>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ==================== TAB 3: THEORY & DOCUMENTATION ==================== -->
+    <div id="tabTheory" class="hidden space-y-5">
+      <section class="glow-card rounded-2xl p-6 border border-slate-800 space-y-6">
+        <div>
+          <h2 class="text-lg font-bold text-white mb-2">Protocol Reference &amp; Performance Formulas</h2>
+          <p class="text-xs text-slate-400">Key theoretical concepts and formulas behind sliding window flow control.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- One Bit -->
+          <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+            <div class="flex items-center gap-2 text-sky-400 font-bold text-sm">
+              <span class="px-2 py-0.5 rounded bg-sky-950 border border-sky-800 text-xs">Protocol 1</span>
+              One-Bit Sliding Window
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Also known as <strong>Stop-and-Wait ARQ</strong>. The sender window size is strictly <strong>1</strong>. The sender transmits a single frame and waits until the acknowledgement arrives before sending the next frame.
+            </p>
+            <div class="p-3 rounded-lg bg-slate-950 font-mono text-[11px] text-slate-400 space-y-1">
+              <div>&bull; Sender Window: <strong>1</strong></div>
+              <div>&bull; Receiver Window: <strong>1</strong></div>
+              <div>&bull; Efficiency: &eta; &approx; <strong>1 / (1 + 2a)</strong></div>
+              <div>&bull; where a = T_prop / T_trans</div>
+            </div>
+          </div>
+
+          <!-- GBN -->
+          <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+            <div class="flex items-center gap-2 text-indigo-400 font-bold text-sm">
+              <span class="px-2 py-0.5 rounded bg-indigo-950 border border-indigo-800 text-xs">Protocol 2</span>
+              Go-Back-N (GBN)
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Allows the sender to transmit up to <strong>N</strong> frames without waiting for an ACK. The receiver accepts frames <strong>only in strictly consecutive order</strong>. If frame <em>k</em> is lost, receiver discards subsequent frames, forcing sender to retransmit <strong>all frames from k onwards (k &rarr; k+1 &rarr; ...)</strong> upon timeout.
+            </p>
+            <div class="p-3 rounded-lg bg-slate-950 font-mono text-[11px] text-slate-400 space-y-1">
+              <div>&bull; Sender Window: <strong>N</strong></div>
+              <div>&bull; Receiver Window: <strong>1</strong></div>
+              <div>&bull; ACKs: <strong>Cumulative</strong></div>
+              <div>&bull; Retransmits: <strong>Entire window</strong></div>
+            </div>
+          </div>
+
+          <!-- SR -->
+          <div class="p-5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+            <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+              <span class="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-xs">Protocol 3</span>
+              Selective Repeat (SR)
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Avoids unnecessary retransmissions by having the receiver buffer out-of-order packets. When frame <em>k</em> is lost, <strong>only frame k is retransmitted</strong>. Individual timers are maintained for each unacknowledged packet.
+            </p>
+            <div class="p-3 rounded-lg bg-slate-950 font-mono text-[11px] text-slate-400 space-y-1">
+              <div>&bull; Sender Window: <strong>N</strong></div>
+              <div>&bull; Receiver Window: <strong>N</strong></div>
+              <div>&bull; ACKs: <strong>Individual / Selective</strong></div>
+              <div>&bull; Retransmits: <strong>Lost packet only</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mathematical Assessment -->
+        <div class="p-5 rounded-xl bg-slate-900/90 border border-indigo-900/50 space-y-3">
+          <h3 class="text-sm font-bold text-indigo-300 uppercase tracking-wide">Performance Metrics Formulas</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-slate-300">
+            <div class="p-3 bg-slate-950 rounded-lg">
+              <span class="text-indigo-400 font-bold">Throughput:</span>
+              <p class="mt-1 text-slate-400 font-sans">
+                The rate of successfully delivered distinct frames per unit time (frames per second).
+              </p>
+              <p class="mt-1 text-indigo-300">Throughput = Frames_Delivered / Total_Time</p>
+            </div>
+            <div class="p-3 bg-slate-950 rounded-lg">
+              <span class="text-emerald-400 font-bold">Efficiency (&eta;):</span>
+              <p class="mt-1 text-slate-400 font-sans">
+                Ratio of useful data transmission time to total transmission time, or useful frames to total transmitted frames.
+              </p>
+              <p class="mt-1 text-emerald-300">&eta; = (Unique_Delivered_Frames / Total_Frames_Sent) &times; 100%</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-900 bg-slate-950 py-3 text-center text-xs text-slate-500 font-mono">
+    Interactive Sliding Window Simulator &amp; Protocol Performance Analyzer
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/protocol-engine.js"></script>
+  <script src="js/visualizer.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    function switchTab(tabName) {
+      document.getElementById('tabSimulation').classList.toggle('hidden', tabName !== 'simulation');
+      document.getElementById('tabComparison').classList.toggle('hidden', tabName !== 'comparison');
+      document.getElementById('tabTheory').classList.toggle('hidden', tabName !== 'theory');
+
+      document.getElementById('tabSimBtn').classList.toggle('active', tabName === 'simulation');
+      document.getElementById('tabCompareBtn').classList.toggle('active', tabName === 'comparison');
+      document.getElementById('tabTheoryBtn').classList.toggle('active', tabName === 'theory');
+
+      if (tabName === 'comparison') {
+        const btn = document.getElementById('btnRunComparison');
+        if (btn) btn.click();
+      }
+    }
+
+    function toggleParametersPanel() {
+      const panel = document.getElementById('parametersPanel');
+      const text = document.getElementById('paramsToggleText');
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        text.textContent = 'Parameters (Open)';
+      } else {
+        panel.classList.add('hidden');
+        text.textContent = 'Parameters (Closed)';
+      }
+    }
+
+    function clearLadderCanvas() {
+      const canvas = document.getElementById('ladderCanvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+  </script>
+</body>
+</html>

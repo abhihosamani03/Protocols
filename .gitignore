@@ -1,0 +1,29 @@
+# Operating System files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Local Windows launcher scripts (keep local only)
+*.bat
+run.bat
+
+# Assignment PDF (keep local only)
+*.pdf
+CN ASSIGNMNETS.pdf
+
+# Editor / IDE settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Node / logs (if used later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
